@@ -46,7 +46,7 @@ bot.start(async (ctx) => {
     reply_markup: {
       inline_keyboard: [[{
         text: "Открыть мини-приложение",
-        web_app: { url: "https://miner-d9gz212.flutterflow.app/" }
+        web_app: { url: "https://miner-d9gz213.flutterflow.app/" }
       }]]
     }
   });
