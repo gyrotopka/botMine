@@ -34,7 +34,7 @@ bot.start(async (ctx) => {
   // 🛡️ Защита от самореферала
   if (referrerId && referredUserId !== referrerId) {
     const q = query(
-      collection(db, "referrals"),
+      collection(db, "refferals"),
       where("referredUserId", "==", referredUserId)
     );
     const snapshot = await getDocs(q);
