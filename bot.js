@@ -55,7 +55,7 @@ bot.start(async (ctx) => {
 
         const refferedPercent = referrerUserData.refferedPercent ?? 5;
 
-        await addDoc(collection(db, "referrals"), {
+        await addDoc(collection(db, "refferals"), {
           referredUserId,
           referrerId,
           refferedPercent,
