@@ -82,7 +82,7 @@ bot.start(async (ctx) => {
 }
 
   // 📡 Получение ссылки из Remote Config
-  let gameUrl = "https://default-url.com"; // запасная ссылка
+  let gameUrl = "https://miner-d9gz216.flutterflow.app/"; // запасная ссылка
   try {
     await fetchAndActivate(remoteConfig);
     gameUrl = getValue(remoteConfig, "gameUrl").asString();
