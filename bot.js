@@ -44,24 +44,42 @@ bot.start(async (ctx) => {
 
   // 🛡️ Защита от самореферала
   if (referrerId && referredUserId !== referrerId) {
-    const q = query(
-      collection(db, "referrals"),
-      where("referredUserId", "==", referredUserId)
-    );
-    const snapshot = await getDocs(q);
+  const q = query(
+    collection(db, "referrals"),
+    where("referredUserId", "==", referredUserId)
+  );
+  const snapshot = await getDocs(q);
 
-    if (snapshot.empty) {
+  if (snapshot.empty) {
+    // 1. Найдём пригласившего по tgId
+    const userQuery = query(
+      collection(db, "users"),
+      where("tgId", "==", referrerId)
+    );
+    const userSnap = await getDocs(userQuery);
+
+    if (userSnap.empty) {
+      console.warn(`⚠️ Пригласивший пользователь с tgId=${referrerId} не найден`);
+    } else {
+      const referrerUserDoc = userSnap.docs[0];
+      const referrerUserData = referrerUserDoc.data();
+
+      const refferedPercent = referrerUserData.refferedPercent ?? 5;
+
       await addDoc(collection(db, "referrals"), {
         referredUserId,
         referrerId,
+        refferedPercent,
         createdAt: new Date(),
         bonusGiven: false
       });
-      console.log(`✅ Реферал добавлен: ${referredUserId} ← ${referrerId}`);
-    } else {
-      console.log(`ℹ️ Повторный заход по рефералке: ${referredUserId}`);
+
+      console.log(`✅ Реферал добавлен: ${referredUserId} ← ${referrerId}, %=${refferedPercent}`);
     }
+  } else {
+    console.log(`ℹ️ Повторный заход по рефералке: ${referredUserId}`);
   }
+}
 
   // 📡 Получение ссылки из Remote Config
   let gameUrl = "https://default-url.com"; // запасная ссылка
