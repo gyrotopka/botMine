@@ -1,7 +1,8 @@
 const { Telegraf } = require("telegraf");
 const { initializeApp } = require("firebase/app");
 const { getFirestore, collection, addDoc, getDocs, query, where } = require("firebase/firestore");
-require("dotenv").config(); // подключение dotenv
+const { getRemoteConfig, fetchAndActivate, getValue } = require("firebase/remote-config");
+require("dotenv").config();
 
 const firebaseConfig = {
   apiKey: process.env.FIREBASE_API_KEY,
@@ -11,6 +12,12 @@ const firebaseConfig = {
 
 const firebaseApp = initializeApp(firebaseConfig);
 const db = getFirestore(firebaseApp);
+const remoteConfig = getRemoteConfig(firebaseApp);
+
+// Устанавливаем минимальный интервал для обновления (по умолчанию 12 часов)
+remoteConfig.settings = {
+  minimumFetchIntervalMillis: 0, // Для тестов можно ставить 0
+};
 
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const bot = new Telegraf(BOT_TOKEN);
@@ -20,9 +27,10 @@ bot.start(async (ctx) => {
   const refParam = ctx.startPayload;
   const referrerId = refParam?.replace("ref", "");
 
+  // 🔐 Защита от самореферала
   if (referrerId && referredUserId !== referrerId) {
     const q = query(
-      collection(db, "referrals"), // или "refferals" если ты оставил с ошибкой
+      collection(db, "referrals"),
       where("referredUserId", "==", referredUserId)
     );
     const snapshot = await getDocs(q);
@@ -34,17 +42,28 @@ bot.start(async (ctx) => {
         createdAt: new Date(),
         bonusGiven: false
       });
-      console.log(`Запись о реферале добавлена: ${referredUserId} ← ${referrerId}`);
+      console.log(`Реферал добавлен: ${referredUserId} ← ${referrerId}`);
     } else {
       console.log(`Повторный заход по рефералке: ${referredUserId}`);
     }
   }
 
+  // 📡 Получение ссылки из Remote Config
+  let gameUrl = "https://miner-d9gz216.flutterflow.app/"; // запасной вариант
+  try {
+    await fetchAndActivate(remoteConfig);
+    gameUrl = getValue(remoteConfig, "gameUrl").asString();
+    console.log(`URL из Remote Config: ${gameUrl}`);
+  } catch (err) {
+    console.error("Ошибка при получении gameUrl из Remote Config:", err);
+  }
+
+  // 📲 Ответ с кнопкой
   await ctx.reply("🚀 Добро пожаловать в игру!", {
     reply_markup: {
       inline_keyboard: [[{
         text: "Открыть мини-приложение",
-        web_app: { url: "https://miner-d9gz212.flutterflow.app/" }
+        web_app: { url: gameUrl }
       }]]
     }
   });
