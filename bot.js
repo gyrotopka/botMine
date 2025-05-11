@@ -1,20 +1,18 @@
 const { Telegraf } = require("telegraf");
 const { initializeApp } = require("firebase/app");
 const { getFirestore, collection, addDoc, getDocs, query, where } = require("firebase/firestore");
+require("dotenv").config(); // подключение dotenv
 
-// 🔐 Прямо указываем ключи (не рекомендуется для продакшена, но можно для MVP/теста)
 const firebaseConfig = {
-  apiKey: "AIzaSyA4Fd-KO1dmNjk-Qz2LTk3dwlO9cMpm6oc",
-  authDomain: "miner-d9gz29.firebaseapp.com",
-  projectId: "miner-d9gz29.firebaseapp.com",
+  apiKey: process.env.FIREBASE_API_KEY,
+  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.FIREBASE_PROJECT_ID,
 };
 
 const firebaseApp = initializeApp(firebaseConfig);
 const db = getFirestore(firebaseApp);
 
-// 🔧 Укажи свой токен бота
-const BOT_TOKEN = "7954194940:AAGzPp4iu3DTwegfEgAuzWReT7dQ2sZJyfU";
-
+const BOT_TOKEN = process.env.BOT_TOKEN;
 const bot = new Telegraf(BOT_TOKEN);
 
 bot.start(async (ctx) => {
@@ -46,7 +44,7 @@ bot.start(async (ctx) => {
     reply_markup: {
       inline_keyboard: [[{
         text: "Открыть мини-приложение",
-        web_app: { url: "https://miner-d9gz213.flutterflow.app/" }
+        web_app: { url: "https://miner-d9gz212.flutterflow.app/" }
       }]]
     }
   });
