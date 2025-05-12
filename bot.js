@@ -25,9 +25,37 @@ const db = getFirestore(firebaseApp);
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const bot = new Telegraf(BOT_TOKEN);
 
+// 🌍 Функция перевода приветствия
+function getLocalizedWelcome(lang) {
+  const messages = {
+    ru: '🚀 Добро пожаловать в игру!',
+    en: '🚀 Welcome to the game!',
+    es: '🚀 ¡Bienvenido al juego!',
+    fr: '🚀 Bienvenue dans le jeu !',
+    de: '🚀 Willkommen im Spiel!',
+  };
+  return messages[lang] || messages.en;
+}
+
+// 🌍 Функция перевода кнопки "Начать"
+function getLocalizedStartButton(lang) {
+  const labels = {
+    ru: 'Начать',
+    en: 'Start',
+    es: 'Empezar',
+    fr: 'Commencer',
+    de: 'Starten',
+  };
+  return labels[lang] || labels.en;
+}
+
 // 📲 START команда Telegram-бота
 bot.start(async (ctx) => {
   const referredUserId = ctx.from.id.toString();
+  const languageCode = ctx.from.language_code || 'en';
+  const welcomeMessage = getLocalizedWelcome(languageCode);
+  const startButtonText = getLocalizedStartButton(languageCode);
+
   const refParam = ctx.startPayload;
   const referrerId = refParam?.replace("ref", "");
 
@@ -48,7 +76,7 @@ bot.start(async (ctx) => {
       const userSnap = await getDocs(userQuery);
 
       if (userSnap.empty) {
-        console.warn(`⚠️ Пригласивший пользователь с tgId=${referrerId} не найден`);
+        console.warn(⚠️ Пригласивший пользователь с tgId=${referrerId} не найден);
       } else {
         const referrerUserDoc = userSnap.docs[0];
         const referrerUserData = referrerUserDoc.data();
@@ -63,20 +91,19 @@ bot.start(async (ctx) => {
           bonusGiven: false
         });
 
-        console.log(`✅ Реферал добавлен: ${referredUserId} ← ${referrerId}, %=${refferedPercent}`);
+        console.log(✅ Реферал добавлен: ${referredUserId} ← ${referrerId}, %=${refferedPercent});
       }
     } else {
-      console.log(`ℹ️ Повторный заход по рефералке: ${referredUserId}`);
+      console.log(ℹ️ Повторный заход по рефералке: ${referredUserId});
     }
   }
 
-  // 📎 Ответ с кнопкой (СТАТИЧНАЯ ССЫЛКА)
-  const gameUrl = "https://miner-d9gz216.flutterflow.app/";
-
-  await ctx.reply("🚀 Добро пожаловать в игру!", {
+  // 📎 Ответ с кнопкой
+  const gameUrl = "https://miner-d9gz232.flutterflow.app";
+  await ctx.reply(welcomeMessage, {
     reply_markup: {
       inline_keyboard: [[{
-        text: "Открыть мини-приложение",
+        text: startButtonText,
         web_app: { url: gameUrl }
       }]]
     }
